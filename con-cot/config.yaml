@@ -1,0 +1,42 @@
+# Minimal knobs for the sentence-transition smoke test
+
+model:
+  # Use the same HF repo id for both HF generation and TransformerLens loading.
+  # Pick a small-ish, CoT-friendly model to keep this single-GPU and snappy.
+  name: "Qwen/Qwen2.5-1.5B-Instruct"
+  device: "auto"          # "cuda", "cpu", or "auto"
+  dtype: "bf16"           # "bf16", "fp16", or "auto"
+
+experiment:
+  layer_to_use: "late-2"  # "late-2" = penultimate layer; or integer index (0-based)
+  k_max: 3                # predict 1..3 tokens ahead (the empirically strong window)
+  last_n_src_tok: 2       # pool last N tokens at the end of the current step
+  first_n_tgt_tok: null   # null => use k; else fixed integer window
+  max_new_tokens: 256     # short chains so caching is cheap
+  num_questions: 20
+  random_seed: 42
+  step_format: "numbered" # "numbered" | "sentence" ; "numbered" = `Step k:` lines
+  run_shuffle_control: true
+  compute_token_ce: true  # also report a logit-lens token-space CE
+
+generation:
+  temperature: 0.7
+  top_p: 0.95
+  do_sample: true
+
+data:
+  # Built-in toy questions for a quick start; swap to "file" + path to use your own.
+  question_source: "builtin"    # "builtin" | "file"
+  questions_file: null
+
+prompt:
+  template: |
+    You are a helpful math solver. Write your working as numbered steps,
+    one per line, then give the final answer.
+
+    Problem: {q}
+
+    Step 1:
+    Step 2:
+    Step 3:
+    Answer:
